@@ -190,14 +190,13 @@ Triple Review запускается при: P0/P1 баги, security-правк
 
 | Задача | Модель | Алиас | Тип |
 |--------|--------|-------|-----|
-| Основная (мониторинг, алерты, отчёты) | Claude Opus 4.6 | `opus` | Anthropic OAuth |
-| Глубокий анализ, code review | GPT-5.3 Codex | `codex` | OAuth |
-| Длинный контекст (>50K) | GPT-5.3 Codex | `codex` | OAuth |
-| Heartbeat | Grok 4.1 Fast | `grok` | OpenRouter |
+| Основная (мониторинг, алерты, отчёты) | Grok 4.1 Fast | `grok` | OpenRouter |
+| Heartbeat | OFF | -- | -- |
 
-**Primary в конфиге:** `anthropic/claude-opus-4-6`
-**Fallback-цепочка:** Opus -> Codex
-**Субагенты:** Grok (default)
+**Primary в конфиге:** `openrouter/x-ai/grok-4.1-fast`
+**Fallback-цепочка:** Grok -> Kimi
+**Субагенты:** Grok 4.1 Fast `openrouter/x-ai/grok-4.1-fast` (default)
+**Heartbeat:** OFF (`every: 0`)
 
 ##### Кель'тас (creator, сервер Sylvanas)
 
@@ -242,6 +241,26 @@ Triple Review запускается при: P0/P1 баги, security-правк
 - Мёртвый / просроченный ключ в `models.json` = инцидент P2 (устранить немедленно)
 - Opus -- **только через Anthropic OAuth**. Через OpenRouter запрещено (P0 инцидент)
 
+**Реестр OpenRouter ключей:**
+
+Каждый агент имеет персональный ключ для раздельного учёта бюджета. В таблице -- последние 3 символа ключа для идентификации.
+
+| Агент | Сервер | Ключ (суффикс) | Лимит | Тип |
+|-------|--------|----------------|-------|-----|
+| Тралл | Thrall | `3b7` | $20 | Глобальный (единственный агент на сервере) |
+| Иллидан | Illidan | `b82` | $10 | Глобальный (единственный агент на сервере) |
+| Сильвана | Sylvanas | `3e0` | $20 | Per-agent (`agents.list[].models.providers.openrouter.apiKey`) |
+| Артас | Sylvanas | `2f0` | $15 | Per-agent |
+| Кель'тас | Sylvanas | `045` | $20 | Глобальный (Sylvanas default) |
+| Джайна | Sylvanas | `895` | $11 | Per-agent |
+| Батрак | Sylvanas | `1f9` | $10 | Per-agent |
+| Кель'тузад | Sylvanas | `c66` | $10 | Per-agent |
+
+**Правила:**
+- На Sylvanas глобальный ключ = Кель'тас (`045`). Остальные агенты используют per-agent override.
+- Лимиты управляются через dashboard OpenRouter.
+- При создании нового агента -- создать отдельный ключ в OpenRouter.
+
 ---
 
 #### 4. Fallback-цепочка (обязательно)
@@ -260,7 +279,7 @@ Triple Review запускается при: P0/P1 баги, security-правк
 |-------|---------|------------|------------|
 | Тралл | Opus (OAuth) | Codex (OAuth) | Grok (OR) |
 | Сильвана | Codex (OAuth) | Grok (OR) | -- |
-| Артас | Opus (OAuth) | Codex (OAuth) | -- |
+| Артас | Grok (OR) | Kimi (OR) | -- |
 | Кель'тас | Opus (OAuth) | Codex (OAuth) | Grok (OR) |
 | Иллидан | Kimi K2.5 (OR) | Codex (OAuth) | -- |
 
