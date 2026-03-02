@@ -236,6 +236,27 @@ Switch-case по тегам. Неизвестная задача -> coordinator 
 ### PR-first правило
 Все изменения в монорепо идут через Pull Request. Прямой push в main запрещён.
 
+### SSH-операции на серверах (обязательно)
+
+При редактировании файлов на Sylvanas/Illidan через SSH агент заходит как **root**, а OpenClaw работает как пользователь **openclaw**. Файлы, созданные или изменённые root'ом, недоступны для OpenClaw на запись (ошибка EACCES).
+
+**Правило:** после ЛЮБОЙ правки файлов через SSH -- обязательно вернуть ownership:
+
+```bash
+chown -R openclaw:openclaw /home/openclaw/.openclaw/agents/
+chown openclaw:openclaw /home/openclaw/.openclaw/openclaw.json
+```
+
+**Что ломается без chown:**
+- QMD index не обновляется (memory search перестаёт работать)
+- Embedding sync падает с EACCES на каждом запросе
+- Все агенты на сервере получают задержки и ошибки
+- auth-profiles.json не сохраняется (настройки теряются при рестарте)
+
+**Инцидент:** пропущенный chown = **P2** (немедленное устранение при обнаружении).
+
+---
+
 ### Change Levels (классификация изменений)
 
 | Level | Описание | Примеры | Review | Merge |
