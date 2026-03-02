@@ -97,7 +97,7 @@ new -> in progress -> [pipeline] -> review -> done
 | 2 | `learnings` | Запись ошибок и уроков | -- |
 | 3 | `memory-tiering` | Управление памятью (HOT/WARM/COLD) | -- |
 | 4 | `transcript` | Транскрипция YouTube | -- |
-| 5 | `socialdata-twitter` | Чтение Twitter/X и статей | -- |
+| 5 | `twitter` | Чтение Twitter/X и статей (FxTwitter + SocialData fallback) | -- |
 | 6 | `gog` | Google Workspace | только Sylvanas (Сильвана, Артас, Кельтас) |
 | 7 | Groq Whisper | Транскрипция голосовых (конфиг speech.provider) | -- |
 | 8 | `memory-audit` | Самоаудит памяти по регламенту конституции | -- |
