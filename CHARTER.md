@@ -177,13 +177,13 @@ Triple Review запускается при: P0/P1 баги, security-правк
 
 | Задача | Модель | Алиас | Тип |
 |--------|--------|-------|-----|
+| Runtime (координация, решения, текст) | Claude Opus 4.6 | `opus` | Anthropic OAuth |
 | Код, сложные задачи | GPT-5.3 Codex | `codex` | OAuth |
-| Обычные задачи, heartbeat | Grok 4.1 Fast | `grok` | OpenRouter |
 | Воркеры (research, сбор данных) | Grok 4.1 Fast | `grok` | OpenRouter |
 | Глубокий анализ, длинный контекст | Gemini 3.1 Pro | `gemini` | OpenRouter |
 
-**Primary в конфиге:** `openai-codex/gpt-5.3-codex`
-**Fallback-цепочка:** Codex -> Grok
+**Primary в конфиге:** `anthropic/claude-opus-4-6`
+**Fallback-цепочка:** Opus -> Codex
 **Субагенты:** Grok (default)
 
 ##### Артас (monitor, сервер Sylvanas)
@@ -194,7 +194,7 @@ Triple Review запускается при: P0/P1 баги, security-правк
 | Heartbeat | OFF | -- | -- |
 
 **Primary в конфиге:** `openrouter/x-ai/grok-4.1-fast`
-**Fallback-цепочка:** Grok -> Kimi
+**Fallback-цепочка:** Grok -> Grok
 **Субагенты:** Grok 4.1 Fast `openrouter/x-ai/grok-4.1-fast` (default)
 **Heartbeat:** OFF (`every: 0`)
 
@@ -207,7 +207,7 @@ Triple Review запускается при: P0/P1 баги, security-правк
 | Heartbeat | Grok 4.1 Fast | `grok` | OpenRouter |
 
 **Primary в конфиге:** `anthropic/claude-opus-4-6`
-**Fallback-цепочка:** Opus -> Codex -> Grok
+**Fallback-цепочка:** Opus -> Codex
 **Субагенты:** Grok (default), Codex (fallback)
 
 ##### Иллидан (devops, сервер Illidan)
