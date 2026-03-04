@@ -2,6 +2,21 @@
 
 
 
+## v3.3.0 (2026-03-04) -- Стандарт Артаса
+
+### Добавлено
+- arthas/STANDARD.md: полная архитектура агента Артас (monitor)
+  - 3-уровневая память (HOT/WARM/COLD) с лимитами и ротацией
+  - Shared память (_shared/, read-only, синк от Тралла)
+  - 4 слоя хранения чатов: sessions JSONL, QMD, per-chat archive, structured JSONL logs
+  - Ротация сессий (session-rotate.sh, 04:00 UTC, порог 500 KB)
+  - Ротация памяти (memory-rotate.sh, 21:00 UTC, порог 8 KB)
+  - Compaction: softThresholdTokens=40000, forceFlushTranscriptBytes=1MB
+  - 2 типа алертов: chat-alerts (@mention принца) + notify-overflow.sh (context overflow -> DM)
+  - Абсолютное правило: системные ошибки только в DM принцу, никогда в группы
+  - 13 скиллов (8 базовых + 3 ролевых + 2 дополнительных)
+  - Полная схема потока данных
+
 ## v3.2.1 (2026-02-27) -- Кельтас на Opus
 
 ### Изменено
