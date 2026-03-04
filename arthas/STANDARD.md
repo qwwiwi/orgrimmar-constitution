@@ -228,13 +228,35 @@ reserveTokensFloor: 30000         <- минимальный резерв для 
 3. Токен из `/opt/openclaw.env` (`ARTHAS_BOT_TOKEN`)
 4. Rate-limit: 1 раз в час (state file `/tmp/arthas-overflow-notified`)
 
+### Алерт 3: Траты (cost-tracker)
+
+После каждого алерта (chat-alerts) Артас автоматически добавляет строку с фактическими тратами OpenRouter:
+
+```
+Траты: $X.XX/час | $Y.YY/день
+```
+
+**Скрипт:** `scripts/arthas-spend.sh` -- обёртка над `or_manager.py`
+
+```bash
+bash scripts/arthas-spend.sh 1h   # траты за час
+bash scripts/arthas-spend.sh 24h  # траты за день
+bash scripts/arthas-spend.sh 7d   # траты за неделю
+```
+
+Возвращает JSON: `{"agent":"arthas","cost_usd":0.03,"assistant_messages":45,...}`
+
+Данные берутся из session JSONL (`usage.cost` в каждом ответе модели) -- это фактические траты, не лимиты.
+
+По запросу принца (`/cost`, «траты», «расходы») -- полный отчёт: за час / за день / за неделю.
+
 ### Абсолютное правило
 
 Никогда не отправлять системные ошибки, context overflow, compaction failure, технические сообщения в групповые чаты. Только DM принцу.
 
 ---
 
-## Скиллы (13)
+## Скиллы (14)
 
 ### Базовые (8)
 
@@ -257,10 +279,11 @@ reserveTokensFloor: 30000         <- минимальный резерв для 
 | `chat-ops` | JSONL логирование, per-chat режимы, watchdog задач |
 | `topic-monitor` | Мониторинг тем через веб-поиск |
 
-### Дополнительные (2)
+### Дополнительные (3)
 
 | Скилл | Назначение |
 |-------|-----------|
+| `cost-tracker` | Фактические траты OpenRouter (после каждого алерта + по запросу /cost) |
 | `whoop-cli` | Здоровье (Whoop браслет) |
 | `market-data` | Рыночные данные |
 
