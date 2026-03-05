@@ -99,7 +99,7 @@ new -> in progress -> [pipeline] -> review -> done
 | 4 | `transcript` | Транскрипция YouTube | -- |
 | 5 | `twitter` | Чтение Twitter/X и статей (FxTwitter + SocialData fallback) | -- |
 | 6 | `gog` | Google Workspace | только Mac mini (Сильвана) + Arthas VPS (Артас) |
-| 7 | Groq Whisper | Транскрипция голосовых (конфиг speech.provider) | -- |
+| 7 | Groq Whisper | Транскрипция голосовых. Требует `tools.alsoAllow: ["exec", "read"]` при профиле `messaging` | -- |
 | 8 | `memory-audit` | Самоаудит памяти по регламенту конституции | -- |
 | 9 | `shared-memory` | Чтение shared-слоя памяти при старте сессии | все агенты |
 
@@ -117,6 +117,7 @@ new -> in progress -> [pipeline] -> review -> done
 | Тралл | `worker-orchestration` | Spawn воркеров: модели, уведомления, коммуникация |
 | Тралл | `openclaw-updater` | Обновление OpenClaw на всех серверах |
 | Сильвана | `task-triage` | Inbox triage + SLA мониторинг задач |
+| Сильвана | `groq-voice` | Транскрипция голосовых из Telegram через Groq Whisper API (whisper-large-v3-turbo) |
 | Артас | `chat-alerts` | Алерт принцу при @mention/reply с ссылкой t.me/c/CHAT_ID/MESSAGE_ID |
 | Артас | `chat-ops` | JSONL логирование, per-chat режимы, watchdog задач |
 | Артас | `topic-monitor` | Мониторинг тем через веб-поиск |
