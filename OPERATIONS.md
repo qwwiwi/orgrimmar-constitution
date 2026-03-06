@@ -245,9 +245,19 @@ Firebase Realtime Database (проект `orgrimmar-brain`, регион `europe
 ├── meta/              # System metadata
 ├── agents/            # Agent status, heartbeat, config
 ├── tasks/             # Task system (replaces shared/tasks/)
-├── content/           # YouTube pipeline, ideas, sources
+├── content/           # Content system (4 канала, 8-фазный pipeline)
+│   ├── channels/      # Каналы: dashi-eshiev, dca, ai-enthusiast, youtube
+│   ├── ideas/         # Идеи постов (7 статусов: idea→published)
+│   ├── sources/       # Источники: статьи, видео, твиты, голосовые
+│   ├── drafts/        # Черновики с fact-check
+│   ├── library/       # Опубликованные посты (референсы стиля)
+│   ├── stance/        # Позиции вождя (core + history)
+│   ├── tone/          # Tone of voice: правила, запреты, паттерны
+│   └── youtube/       # YouTube pipeline (скрипты, продакшн)
+├── ref/               # Reference data
+│   └── user/          # Профиль вождя (имя, контакты, каналы, цели)
 ├── events/            # Append-only event log
-├── learnings/         # Shared lessons (replaces shared/LEARNINGS.md)
+├── learnings/         # Shared lessons (10 полей: context, wrong, correct, rule...)
 ├── bulletin/          # Bulletin board
 ├── constitution/      # Constitution mirror
 ├── finance/           # API usage, budgets
@@ -330,6 +340,71 @@ Illidan VPS: sa-illidan
 - Curator видит ТОЛЬКО свой проект
 - История изменений -- append-only (`/projects/{project-id}/history/`)
 - Credentials проекта доступны только `sa-silvana`
+
+---
+
+## Контентная система (Firebase)
+
+Контентная система живёт в `/content/` на Firebase RTDB. 4 канала, 8-фазный pipeline.
+
+### Каналы
+
+| ID | Канал | Тип | Контент |
+|----|-------|-----|---------|
+| `dashi-eshiev` | @dashi_eshiev | Telegram | Крипто, макро, инвестиции |
+| `dca` | DCA $10 каждый день | Telegram | Ежедневные покупки, трекинг |
+| `ai-enthusiast` | Записка AI энтузиаста | Telegram | AI-инструменты, опыт |
+| `youtube` | Dashi Eshiev | YouTube | Видео: крипта, AI, бренд |
+
+### Pipeline (8 фаз)
+
+```
+1. SOURCE      → /content/sources/      Принц присылает ссылку/аудио/скрин
+2. ANALYSIS    → source.key_thesis      Синтез тезисов из sources
+3. STANCE      → /content/stance/core   Сверка с позицией вождя
+4. DRAFT       → /content/drafts/       Написать черновик (version 1)
+5. FACT-CHECK  → draft.fact_check       Проверка фактов через API
+6. REVIEW      → idea.status=review     Показать вождю
+7. PUBLISH     → /content/library/      После одобрения → финальный текст
+8. LEARN       → library.learnings/     Записать уроки из правок → tone/
+```
+
+### Структура данных
+
+- **ideas/** -- идеи постов. Статусы: `idea → approved → drafting → fact-check → review → published | rejected`. Поля: channel, title, concept, angle, format, priority, tags
+- **sources/** -- входящие материалы. Типы: article, video, voice, tweet, podcast, screenshot, forward. Категории: crypto, macro, ai, personal, market
+- **drafts/** -- черновики с версионированием и fact-check (per-claim: confirmed/outdated/wrong)
+- **library/** -- опубликованные посты. `is_reference: true` = референс стиля. Содержит learnings из правок
+- **stance/** -- позиции вождя (`core` + append-only `history/`)
+- **tone/** -- tone of voice: `voice` (общий), `bans/` (запреты), `patterns/` (паттерны)
+
+### Доступ
+
+- Пишут: `sa-silvana`, `sa-claude` (ideas, sources, drafts, library)
+- `sa-thrall` имеет доступ к `/content/` для pipeline-автоматизации
+- Stance и tone пишет только `sa-silvana`
+- YouTube pipeline: `sa-youtube-bot` → только `/content/youtube/`
+
+---
+
+## Профиль вождя (Firebase)
+
+Профиль вождя хранится в `/ref/user/` на Firebase RTDB. Содержит:
+
+| Поле | Описание |
+|------|----------|
+| `name` | Имя |
+| `telegram` | Telegram username |
+| `telegram_id` | ID в Telegram |
+| `timezone` | Часовой пояс |
+| `location` | Город |
+| `email` | Почта |
+| `channels` | Список каналов с типом и URL |
+| `goals` | Текущие цели |
+
+Конкретные значения -- в Firebase, НЕ в конституции (приватные данные).
+
+Доступ: читают все агенты, пишет только `sa-silvana` (по команде вождя).
 
 ---
 
@@ -810,8 +885,21 @@ workspace/<agent>/
 
 **LEARNINGS -- уроки из ошибок:**
 - Записывать ТОЛЬКО когда: вождь поправил, ошибка дорогая, паттерн повторяется
-- Формат: контекст + ошибка + причина + правило на будущее
 - Качество > количество. Не дублировать.
+- **Формат урока (10 полей):**
+
+| Поле | Описание | Обязательно |
+|------|----------|-------------|
+| `context` | Ситуация, в которой произошла ошибка | да |
+| `wrong` | Что агент сделал неправильно | да |
+| `correct` | Что нужно было сделать | да |
+| `rule` | Правило на будущее (одно предложение) | да |
+| `check` | Как проверить соблюдение правила | нет |
+| `source` | Откуда урок: telegram, self-audit, system, incident, review | нет |
+| `scope` | Область: global, ops, silvana, thrall, illidan, arthas, claude | нет |
+| `agent` | Какой агент допустил ошибку | нет |
+| `author` | Кто записал урок | да |
+| `date` | Дата записи | да |
 
 **COLD -- архив решений:**
 - Только уникальные решения и итоги, которых НЕТ в AGENTS.md
