@@ -10,8 +10,8 @@ _Полное описание архитектуры, конфигурации 
 |----------|----------|
 | **Имя** | Иллидан |
 | **Роли** | devops, code-reviewer |
-| **Сервер** | Illidan VPS (167.99.132.27) |
-| **Tailscale IP** | 100.115.122.16 |
+| **Сервер** | Illidan VPS |
+| **Tailscale IP** | `<ILLIDAN_TS_IP>` |
 | **Workspace** | `/home/openclaw/.openclaw/workspace/` |
 | **Config** | `/home/openclaw/.openclaw/openclaw.json` |
 | **Каналы** | Telegram (@Illidandevopsbot), Discord |
@@ -57,19 +57,19 @@ Heartbeat выполняет проактивный чеклист по 4 точ
 systemctl is-active openclaw && free -h | grep Mem && df -h / | tail -1
 ```
 
-**2. Sylvanas (100.107.104.91):**
+**2. Sylvanas (`<ARTHAS_TS_IP>`):**
 ```bash
-ssh -o ConnectTimeout=5 root@100.107.104.91 "systemctl is-active openclaw && free -h | grep Mem && df -h / | tail -1"
+ssh -o ConnectTimeout=5 root@<ARTHAS_TS_IP> "systemctl is-active openclaw && free -h | grep Mem && df -h / | tail -1"
 ```
 
-**3. Thrall (100.104.191.127):**
+**3. Thrall (`<THRALL_TS_IP>`):**
 ```bash
-ssh -o ConnectTimeout=5 root@100.104.191.127 "systemctl is-active openclaw && free -h | grep Mem && df -h / | tail -1"
+ssh -o ConnectTimeout=5 root@<THRALL_TS_IP> "systemctl is-active openclaw && free -h | grep Mem && df -h / | tail -1"
 ```
 
 **4. Codex JWT (Sylvanas):**
 ```bash
-ssh -o ConnectTimeout=5 root@100.107.104.91 "bash /home/openclaw/.openclaw/scripts/check-codex-jwt.sh"
+ssh -o ConnectTimeout=5 root@<ARTHAS_TS_IP> "bash /home/openclaw/.openclaw/scripts/check-codex-jwt.sh"
 ```
 
 ### Логика реакции
@@ -273,7 +273,7 @@ workspace/
 
 | Канал | Policy | AllowFrom |
 |-------|--------|-----------|
-| Telegram | DM allowlist | 164795011 (принц) |
+| Telegram | DM allowlist | `<PRINCE_TG_ID>` (принц) |
 | Discord | DM allowlist | 405437779955417100 |
 
 Streaming: Telegram partial, Discord off.

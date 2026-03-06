@@ -10,7 +10,7 @@ _Полное описание архитектуры, конфигурации 
 |----------|----------|
 | **Имя** | Артас |
 | **Роли** | monitor |
-| **Сервер** | Sylvanas (164.92.170.249) |
+| **Сервер** | Arthas VPS |
 | **Workspace** | `/home/openclaw/.openclaw/workspaces/arthas/` |
 | **Config** | `/home/openclaw/.openclaw/openclaw.json` |
 | **Канал** | Telegram (@arthasmonitorbot) |

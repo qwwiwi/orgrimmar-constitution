@@ -1037,7 +1037,7 @@ orgbus обязателен на всех серверах. Отсутствие
 | Параметр | Значение |
 |----------|----------|
 | Хостинг | Arthas VPS, Docker |
-| Доступ | 100.107.104.91:3000 (ТОЛЬКО Tailscale!) |
+| Доступ | `<ARTHAS_TS_IP>`:3000 (ТОЛЬКО Tailscale!) |
 | Синхронизация | langfuse-sync.sh каждые 15 мин → Firebase /finance/api_usage |
 | SA | sa-langfuse-sync |
 
