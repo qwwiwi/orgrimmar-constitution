@@ -10,8 +10,8 @@ _Полное описание архитектуры, конфигурации 
 |----------|----------|
 | **Имя** | Кель'тас |
 | **Роли** | content-creator, market-analyst, copywriter |
-| **Сервер** | Sylvanas VPS (164.92.170.249) |
-| **Tailscale IP** | 100.107.104.91 |
+| **Сервер** | Arthas VPS |
+| **Tailscale IP** | `<ARTHAS_TS_IP>` |
 | **Workspace** | `/home/openclaw/.openclaw/workspaces/kaelthas/` |
 | **Config** | `/home/openclaw/.openclaw/openclaw.json` |
 | **Канал** | Telegram (@kaelthas_bot) |

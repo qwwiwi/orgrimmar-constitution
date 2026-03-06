@@ -10,8 +10,8 @@ _Полное описание архитектуры, конфигурации 
 |----------|----------|
 | **Имя** | Тралл |
 | **Роли** | coder, architect |
-| **Сервер** | Thrall VPS (46.101.119.56) |
-| **Tailscale IP** | 100.104.191.127 |
+| **Сервер** | Thrall VPS |
+| **Tailscale IP** | `<THRALL_TS_IP>` |
 | **Workspace** | `/home/openclaw/.openclaw/workspace/` |
 | **Config** | `/home/openclaw/.openclaw/openclaw.json` |
 | **Канал** | Telegram (@trallvibecoderbot) |
