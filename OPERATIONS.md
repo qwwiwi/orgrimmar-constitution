@@ -429,10 +429,12 @@ rd-engine    ──нашёл модель──>  model-scout (measure -> migra
 
 | ID | Расписание | Скрипт | Что сломается при удалении |
 |----|-----------|--------|---------------------------|
-| **SYL-C1** | `0 21 * * *` | `memory-rotate.sh` (Сильвана) | Файлы памяти вырастут >10KB → flush заблокирован → Сильвана не сохраняет контекст |
-| **SYL-C2** | `0 21 * * *` | `memory-rotate.sh` (Артас) | То же — Артас |
-| **SYL-C4** | `0 */6 * * *` | `constitution-sync.sh` | `_shared/CONVENTIONS.md` устаревает → агенты работают по старым правилам |
-| **SYL-C5** | `0 */6 * * *` | `learnings-merge.py` | `shared/LEARNINGS.md` не обновляется → уроки агентов не попадают в общую память |
+| **ART-C1** | `0 21 * * *` | `memory-rotate.sh` (Артас) | Файлы памяти вырастут >10KB → flush заблокирован → Артас не сохраняет контекст |
+| **ART-C2** | `0 */6 * * *` | `constitution-sync.sh` | `_shared/CONVENTIONS.md` устаревает → Артас работает по старым правилам |
+| **ART-C3** | `0 */6 * * *` | `learnings-merge.py` | `shared/LEARNINGS.md` не обновляется → уроки не попадают в общую память |
+| **ART-C4** | `0 4 * * *` | `backup-daily.sh` | Нет бэкапов → потеря данных при сбое |
+| **ART-C5** | `0 4 * * *` | `session-rotate.sh` | Сессии не чистятся → диск переполняется |
+| **ART-C6** | `*/5 * * * *` | `notify-overflow.sh` | Нет мониторинга переполнения |
 
 #### Thrall (crontab openclaw)
 
@@ -500,7 +502,7 @@ rd-engine    ──нашёл модель──>  model-scout (measure -> migra
 | **S-CRON-1** | `constitution-sync.sh` (каждые 6ч) | Актуализирует конституцию/конвенции | PROTECTED |
 | **S-CRON-2** | `memory-rotate.sh` (daily) | Сдерживает рост memory-файлов, сохраняет flush-работоспособность | PROTECTED |
 | **S-CRON-3** | `learnings-merge.py` (каждые 6ч) | Синхронизирует общий слой уроков | PROTECTED |
-| **S-CRON-4** | `notify-chief-channel.sh` (каждые 30м) | Сигнализирует про blocked/needs_chief по задачам | PROTECTED |
+| **S-CRON-4** | `notify-chief-channel.sh` (каждые 30м) | Сигнализирует про blocked/needs_chief по задачам | REMOVED (2026-03-06) |
 
 #### 4) Обязательные параметры памяти/QMD
 
@@ -913,7 +915,7 @@ USER.md, USER_COGNITIVE_PROFILE.md, ROSTER.md, CONVENTIONS.md, COSTS.md, CHATS.m
 - Игнорировать проверку размера перед записью (flush)
 - Писать в `agent-memory/shared/` напрямую (только через obsidian-sync)
 - Писать в `shared/LEARNINGS.md` напрямую (только через learnings-merge.py)
-- **Удалять защищённые кроны** (SYL-C1..C5, THR-C1..C3, ILL-C1..C2) без замены — см. раздел «Инварианты памяти»
+- **Удалять защищённые кроны** (ART-C1..C6, THR-C1..C5, ILL-C1..C2) без замены — см. раздел «Инварианты памяти»
 - **Менять `embedInterval` на `"0"`** — QMD перестаёт строить эмбеддинги
 - **Удалять коллекцию `shared-main`** из QMD index.yml любого агента
 
@@ -1038,7 +1040,7 @@ URL берутся ТОЛЬКО из данных парсера (теги `[htt
 | `data/ai-news-sources.conf` | Thrall | Конфиг источников |
 | `scripts/notify-chief-channel.sh` | Mac mini | Blocked tasks scanner |
 | `scripts/check-needs-chief.sh` | Mac mini | Проверка needs_chief задач |
-| `scripts/whoop-token-refresh.sh` | Arthas VPS | WHOOP OAuth token refresh |
+| ~~`scripts/whoop-token-refresh.sh`~~ | ~~Arthas VPS~~ | REMOVED (2026-03-06) |
 
 Cron ID потоков -- в `shared/cron-registry.md` (source of truth для расписаний).
 ## Task Dashboard (task.orgrimmar.xyz)
