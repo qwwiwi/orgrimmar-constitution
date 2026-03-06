@@ -662,7 +662,8 @@ rd-engine    ──нашёл модель──>  model-scout (measure -> migra
 | ID | Параметр | Обязательное значение | Что сломается при нарушении |
 |----|---------|----------------------|----------------------------|
 | **CFG-1** | `memory.qmd.update.embedInterval` | `"30m"` (не `"0"`, не пусто) | QMD не строит эмбеддинги → семантический поиск мёртв |
-| **CFG-2** | `agents.defaults.compaction.memoryFlush.softThresholdTokens` | `30000` | Compaction не срабатывает → память не сбрасывается никогда |
+| **CFG-2** | `agents.defaults.compaction.memoryFlush.softThresholdTokens` | `4000` (дефолт OpenClaw) | Flush не запускается вовремя → память не сбрасывается перед compaction |
+| **CFG-2a** | `agents.defaults.compaction.mode` | `"safeguard"` | Compaction не срабатывает автоматически |
 | **CFG-3** | `agents.defaults.compaction.memoryFlush.enabled` | `true` | Flush отключён → агент не сохраняет ничего между сессиями |
 | **CFG-4** | Коллекция `shared-main` в `agents/<id>/qmd/index.yml` | присутствует на всех агентах | Агент не видит shared-память через QMD |
 
@@ -712,7 +713,8 @@ rd-engine    ──нашёл модель──>  model-scout (measure -> migra
 |----|----------|----------|--------|
 | **S-CFG-1** | `memory.qmd.update.embedInterval` | `30m` | PROTECTED |
 | **S-CFG-2** | `agents.defaults.compaction.memoryFlush.enabled` | `true` | PROTECTED |
-| **S-CFG-3** | `agents.defaults.compaction.memoryFlush.softThresholdTokens` | `30000` | PROTECTED |
+| **S-CFG-3** | `agents.defaults.compaction.memoryFlush.softThresholdTokens` | `4000` | PROTECTED |
+| **S-CFG-3a** | `agents.defaults.compaction.mode` | `"safeguard"` | PROTECTED |
 | **S-CFG-4** | `agents/<id>/qmd/index.yml` содержит `shared-main` | обязательно для каждого агента | PROTECTED |
 
 #### 5) Границы, что НЕ является protected
@@ -779,7 +781,9 @@ ei = d.get('memory',{}).get('qmd',{}).get('update',{}).get('embedInterval','')
 ok = ei not in ['0','0s','']
 print('✅ embedInterval: ' + ei if ok else '❌ НАРУШЕН: embedInterval=' + ei)
 thr = d.get('agents',{}).get('defaults',{}).get('compaction',{}).get('memoryFlush',{}).get('softThresholdTokens',0)
-print('✅ softThresholdTokens: ' + str(thr) if thr==30000 else '❌ НАРУШЕН: softThresholdTokens=' + str(thr))
+print('✅ softThresholdTokens: ' + str(thr) if thr==4000 else '❌ НАРУШЕН: softThresholdTokens=' + str(thr))
+mode = d.get('agents',{}).get('defaults',{}).get('compaction',{}).get('mode','')
+print('✅ compaction.mode: ' + mode if mode=='safeguard' else '❌ НАРУШЕН: compaction.mode=' + mode)
 "
 ```
 
@@ -914,7 +918,8 @@ workspace/<agent>/
 
 | Параметр | Значение |
 |----------|----------|
-| Порог compaction | 30 000 токенов |
+| Порог memory flush | contextWindow − reserveTokensFloor − softThresholdTokens (Opus: ~176k) |
+| Порог auto-compaction | contextWindow − reserveTokensFloor (Opus: ~180k) |
 | Макс. размер файла для flush | 10 KB |
 | Порог ротации | 8 KB |
 | Хранение дневников | 3 дня, затем → archive/ |
@@ -922,7 +927,17 @@ workspace/<agent>/
 
 #### Compaction (автоматическое сжатие)
 
-При достижении 30k токенов OpenClaw вызывает memoryFlush:
+Формула порогов (из исходников OpenClaw):
+```
+Memory flush = contextWindow - reserveTokensFloor - softThresholdTokens
+Auto-compaction = contextWindow - reserveTokensFloor
+
+Opus (200k): flush при ~176k, compaction при ~180k
+Codex (200k): flush при ~176k, compaction при ~180k
+Grok (131k): flush при ~107k, compaction при ~111k
+```
+
+При достижении порога flush OpenClaw вызывает memoryFlush:
 
 1. Агент проверяет размер каждого файла (`wc -c`) ПЕРЕД записью
 2. Если файл >10KB -- пропустить, НЕ писать
@@ -1184,7 +1199,7 @@ collections:
 | Раздел | Содержание |
 |--------|-----------|
 | А. Личная память | Наличие 6 файлов (HOT/WARM/WATCHLIST/LEARNINGS/MEMORY/SOUL), размеры |
-| Б. Compaction | Промпт flush содержит все 6 элементов, `softThresholdTokens: 30000` |
+| Б. Compaction | Промпт flush содержит все 6 элементов, `softThresholdTokens: 4000`, `compaction.mode: safeguard` |
 | В. Shared память | `_shared/` — 8 файлов (Mac mini, master), `agent-memory/shared/` — 10 файлов (все серверы) |
 | Г. QMD | index.yml: 5 коллекций включая `shared`, `embedInterval: 30m` |
 | Д. Obsidian sync | Покрытие 5 агентов, последний успешный запуск (только Тралл) |
