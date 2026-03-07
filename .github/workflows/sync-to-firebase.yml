@@ -1,0 +1,90 @@
+name: Sync Constitution to Firebase
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'PRINCIPLES.md'
+      - 'CHARTER.md'
+      - 'OPERATIONS.md'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Firebase access token
+        id: auth
+        run: |
+          # Create JWT from service account
+          SA_KEY='${{ secrets.FIREBASE_SA_KEY }}'
+
+          HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | base64 -w0 | tr '+/' '-_' | tr -d '=')
+
+          NOW=$(date +%s)
+          EXP=$((NOW + 3600))
+          SA_EMAIL=$(echo "$SA_KEY" | jq -r '.client_email')
+          TOKEN_URI=$(echo "$SA_KEY" | jq -r '.token_uri')
+
+          CLAIMS=$(echo -n "{\"iss\":\"$SA_EMAIL\",\"scope\":\"https://www.googleapis.com/auth/firebase.database https://www.googleapis.com/auth/userinfo.email\",\"aud\":\"$TOKEN_URI\",\"iat\":$NOW,\"exp\":$EXP}" | base64 -w0 | tr '+/' '-_' | tr -d '=')
+
+          # Sign JWT with private key
+          PRIVATE_KEY=$(echo "$SA_KEY" | jq -r '.private_key')
+          SIGNATURE=$(echo -n "${HEADER}.${CLAIMS}" | openssl dgst -sha256 -sign <(echo "$PRIVATE_KEY") | base64 -w0 | tr '+/' '-_' | tr -d '=')
+
+          JWT="${HEADER}.${CLAIMS}.${SIGNATURE}"
+
+          # Exchange JWT for access token
+          RESPONSE=$(curl -s -X POST "$TOKEN_URI" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=$JWT")
+
+          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
+
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Failed to get access token"
+            echo "$RESPONSE"
+            exit 1
+          fi
+
+          echo "::add-mask::$ACCESS_TOKEN"
+          echo "token=$ACCESS_TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Sync documents to Firebase RTDB
+        run: |
+          BASE_URL="https://orgrimmar-brain-default-rtdb.europe-west1.firebasedatabase.app"
+          TOKEN="${{ steps.auth.outputs.token }}"
+          FAILED=0
+
+          for doc in PRINCIPLES CHARTER OPERATIONS; do
+            FILE="${doc}.md"
+            FIREBASE_PATH="constitution/$(echo "$doc" | tr '[:upper:]' '[:lower:]')"
+
+            if [ ! -f "$FILE" ]; then
+              echo "SKIP: $FILE not found"
+              continue
+            fi
+
+            echo "Syncing $FILE -> $FIREBASE_PATH"
+
+            CONTENT=$(cat "$FILE" | jq -Rs '.')
+
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+              "${BASE_URL}/${FIREBASE_PATH}.json?access_token=${TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "$CONTENT")
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "OK: $FILE synced ($HTTP_CODE)"
+            else
+              echo "FAIL: $FILE returned $HTTP_CODE"
+              FAILED=1
+            fi
+          done
+
+          if [ "$FAILED" = "1" ]; then
+            exit 1
+          fi
+
+          echo "All constitution documents synced to Firebase"
