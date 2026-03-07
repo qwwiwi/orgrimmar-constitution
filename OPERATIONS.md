@@ -312,6 +312,12 @@ Firebase Realtime Database (проект `orgrimmar-brain`, регион `europe
 - `.read: false, .write: false` на корне -- root никогда не открыт
 - SA зашифрованы через sops/age, хранятся в `~/.secrets/firebase/` (chmod 600). НИКОГДА в Git
 
+### Синхронизация конституции (GitHub --> Firebase)
+
+GitHub Action (`sa-github-action`) зеркалит конституцию в Firebase (`/constitution/`) при каждом push в `main`.
+Агенты читают конституцию из Firebase: `orgbus get constitution/charter`, `orgbus get constitution/operations` и т.д.
+Локальный cron `constitution-sync.sh` -- **DEPRECATED**, заменён Firebase.
+
 ### Obsidian Sync (Firebase --> Obsidian)
 
 Firebase --> Obsidian -- read-only зеркало через cron каждые 2 минуты (`firebase-to-obsidian.sh` на Mac mini). Obsidian используется для визуализации, Firebase -- source of truth.

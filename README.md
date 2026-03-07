@@ -42,9 +42,19 @@ Read-only свод правил, который агенты обязаны со
 
 ## Синхронизация
 
-Каждый сервер: `/home/openclaw/.openclaw/constitution/`  
-Скрипт: `constitution-sync.sh` — `git pull --rebase origin main`  
-Расписание: каждые 6 часов (cron)
+```
+GitHub (jasonqween/orgrimmar-constitution)
+    ↓ GitHub Action (sa-github-action)
+Firebase RTDB (/constitution/)
+    ↓ orgbus get constitution/{doc}
+Агенты на всех серверах
+```
+
+- **GitHub** -- источник правды, принц мержит PR в main
+- **Firebase** -- автоматическое зеркало через GitHub Action (sa-github-action)
+- **Агенты** -- читают конституцию из Firebase при старте сессии или on-demand
+- Локальный git clone (`~/Projects/orgrimmar-constitution/`) -- только для подготовки PR
+- Cron `constitution-sync.sh` на серверах -- **DEPRECATED**, заменён Firebase
 
 ## Как предложить изменение
 
