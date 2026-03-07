@@ -101,7 +101,7 @@ inbox -> progress -> [pipeline] -> review -> done
 | 6 | `gog` | Google Workspace | только Mac mini (Сильвана) + Arthas VPS (Артас) |
 | 7 | Groq Whisper | Транскрипция голосовых. Требует `tools.alsoAllow: ["exec", "read"]` при профиле `messaging` | -- |
 | 8 | `memory-audit` | Самоаудит памяти по регламенту конституции | -- |
-| 9 | `shared-memory` | Чтение shared-слоя памяти при старте сессии | все агенты |
+| ~~9~~ | ~~`shared-memory`~~ | ~~Чтение shared-слоя памяти при старте сессии~~ | **DEPRECATED** — заменён Firebase boot + QMD |
 
 **Правило OAuth-скиллов:** скиллы с OAuth-авторизацией (`gog` и подобные) ставятся только на ОДИН сервер. GOG = Mac mini (Сильвана).
 
@@ -827,11 +827,13 @@ done
 
 | ID | Расписание | Скрипт | Что сломается при удалении |
 |----|-----------|--------|---------------------------|
-| **THR-C1** | `0 * * * *` | `obsidian-sync.sh` | `agent-memory/shared/` устаревает → все агенты теряют shared-контекст через QMD |
+| ~~**THR-C1**~~ | ~~`0 * * * *`~~ | ~~`obsidian-sync.sh`~~ | **DEPRECATED** — заменён Firebase SSE listener |
 | ~~**THR-C2**~~ | ~~`0 */6 * * *`~~ | ~~`constitution-sync.sh`~~ | **DEPRECATED** — заменён Firebase sync (GitHub Action `sa-github-action`) |
 | **THR-C3** | `0 21 * * *` | `memory-rotate.sh` | Тралл не ротирует память → flush заблокирован |
-| **THR-C4** | `30 3 * * *` | `backup-daily.sh` | Нет бэкапов → потеря данных при сбое |
+| ~~**THR-C4**~~ | ~~`30 3 * * *`~~ | ~~`backup-daily.sh`~~ | **DEPRECATED** — бэкапы отключены |
 | **THR-C5** | `0 4 * * *` | `cleanup-tmp.sh` | /tmp забивается → диск переполняется |
+| **THR-C6** | `*/5 * * * *` | `thrall-heartbeat.sh` | Heartbeat не обновляется → Артас считает агента мёртвым |
+| **THR-C7** | `@reboot` | `firebase-sse-listener.sh` | Firebase mirrors не обновляются → QMD не видит изменений |
 
 #### Illidan (crontab openclaw)
 
@@ -858,7 +860,8 @@ done
 |----|-------|---------------|---------------------------|
 | **SKL-1** | `memory-audit` | все серверы, все агенты | Нет самодиагностики → нарушения памяти не обнаруживаются |
 | **SKL-2** | `learnings` | все серверы, все агенты | Агент не пишет уроки в LEARNINGS.md |
-| **SKL-3** | `shared-memory` | все серверы, все агенты | Агент не читает контекст принца и команды при старте |
+| ~~**SKL-3**~~ | ~~`shared-memory`~~ | ~~все серверы, все агенты~~ | **DEPRECATED** — заменён Firebase boot sequence + QMD |
+| **SKL-3a** | `firebase-ops` | все серверы, все агенты | Агент не может читать/писать Firebase через orgbus |
 
 ### Protected baseline — Сильвана (минимум для работы)
 
@@ -909,19 +912,38 @@ done
 
 #### Ролевые скиллы Тралла (coder)
 
+**Tier 1 — PROTECTED** (удаление = VIOLATION):
+
 | ID | Скилл | Что сломается при удалении |
 |----|-------|---------------------------|
-| **THR-SKL-7** | `server-ops` | Не может управлять Arthas VPS/Illidan/Mac mini через SSH |
+| **THR-SKL-1** | `firebase-ops` | Не может работать с Firebase (orgbus) |
+| **THR-SKL-2** | `agent-messaging` | Не может общаться с другими агентами |
+| **THR-SKL-3** | `task-system` | Не может управлять задачами |
+| **THR-SKL-4** | `learnings` | Не записывает уроки |
+| **THR-SKL-5** | `memory-audit` | Нет самодиагностики памяти |
+| **THR-SKL-6** | `memory-tiering` | Не управляет HOT/WARM/COLD |
+| **THR-SKL-7** | `server-ops` | Не может управлять серверами через SSH |
 | **THR-SKL-8** | `cross-review` | PR от Иллидана остаются без review |
-| **THR-SKL-9** | `worker-orchestration` | Не может делегировать задачи воркерам |
-| **THR-SKL-10** | `openclaw-updater` | Обновления без процедуры канарейки |
-| **THR-SKL-11** | `orgrimmar-introspection` | Потеря контекста при cross-server задачах |
-| **THR-SKL-12** | `dev-pipeline` | Нет структурированного процесса разработки |
-| **THR-SKL-13** | `agent-bugfix` | Агенты чинятся без процедуры |
-| **THR-SKL-14** | `safe-update` | Раскатка на агентов без проверки |
-| **THR-SKL-21** | `skill-creator` | Не может создавать скиллы для агентов |
+| **THR-SKL-9** | `dev-pipeline` | Нет структурированного процесса разработки |
 
-Полный реестр: `thrall/STANDARD.md`, секция «Защищённые скиллы».
+**Tier 2 — Role-specific** (удаление через PR):
+
+| ID | Скилл | Назначение |
+|----|-------|------------|
+| **THR-SKL-10** | `worker-orchestration` | Делегирование задач воркерам |
+| **THR-SKL-11** | `openclaw-updater` | Обновления с процедурой канарейки |
+| **THR-SKL-12** | `openclaw-architecture` | Аудит конфигурации агентов |
+| **THR-SKL-13** | `agent-bugfix` | Починка агентов по процедуре |
+| **THR-SKL-14** | `safe-update` | Раскатка на агентов с проверкой |
+| **THR-SKL-15** | `skill-creator` | Создание скиллов для агентов |
+| **THR-SKL-16** | `constitution-pr` | PR в конституцию |
+| **THR-SKL-17** | `transcript` | Транскрипция YouTube |
+| **THR-SKL-18** | `twitter` | Чтение Twitter/X |
+| **THR-SKL-19** | `task-triage` | Сортировка и приоритизация задач |
+| **THR-SKL-20** | `git-workflows` | Продвинутые git-операции |
+| **THR-SKL-21** | `firebase-listener` | SSE-подключение к Firebase |
+
+Полный реестр: `thrall/STANDARD.md`, секция «Skills by Tiers».
 
 ### Протокол перед изменением crontab
 
@@ -932,7 +954,7 @@ done
 crontab -u openclaw -l > /tmp/crontab.backup.$(date +%Y%m%d_%H%M%S)
 
 # 2. После изменения — верифицируй, что защищённые кроны на месте
-crontab -u openclaw -l | grep -E "memory-rotate|learnings-merge|obsidian-sync"
+crontab -u openclaw -l | grep -E "memory-rotate|learnings-merge|heartbeat|firebase-sse"
 
 # 3. Если кто-то из них пропал — СТОП, восстанови из бэкапа:
 # crontab -u openclaw /tmp/crontab.backup.<timestamp>
@@ -954,7 +976,8 @@ SERVER=$(hostname)
 # Кроны
 check() { echo "$CRON" | grep -q "$2" && echo "✅ $1" || echo "❌ НАРУШЕН: $1 ($2)"; }
 check "memory-rotate"     "memory-rotate"
-[ "$(echo $SERVER | grep -i thrall)" ] && check "obsidian-sync" "obsidian-sync"
+[ "$(echo $SERVER | grep -i thrall)" ] && check "firebase-sse-listener" "firebase-sse"
+[ "$(echo $SERVER | grep -i thrall)" ] && check "thrall-heartbeat" "thrall-heartbeat"
 [ "$(echo $SERVER | grep -i sylvanas)" ] && check "learnings-merge" "learnings-merge"
 
 # Config
@@ -1179,14 +1202,19 @@ shared/
     └── ideas/                   Проектные идеи (idea-capture.sh)
 ```
 
-#### Obsidian-зеркало (agent-memory/shared/)
+#### ~~Obsidian-зеркало (agent-memory/shared/)~~ — DEPRECATED
 
-Только для чтения. Синхронизируется с GitHub каждый час (obsidian-sync.sh на Thrall).
+~~Только для чтения. Синхронизируется с GitHub каждый час (obsidian-sync.sh на Thrall).~~
+
+**Заменено:** Firebase SSE listener → `memory/firebase/*.md` → QMD.
 
 ```
-agent-memory/shared/
-├── все файлы из workspace/_shared/    rsync каждый час
-├── LEARNINGS.md                       из shared/LEARNINGS.md каждый час
+memory/firebase/           # Firebase mirrors (SSE listener)
+├── tasks-mine.md          realtime
+├── bulletin.md            realtime
+├── learnings.md           realtime
+├── content-ideas.md       realtime
+├── agents-status.md       realtime
 ├── CONVENTIONS.md                     из constitution/ каждый час (актуальная версия)
 └── IDEAS.md                           агрегация из tasks/ideas/ (плоский список)
 ```
@@ -1320,7 +1348,10 @@ collections:
 | Расписание | Скрипт | Что делает |
 |-----------|--------|-----------|
 | `0 21 * * *` | `memory-rotate.sh` | ротация памяти Тралла |
-| `0 * * * *` | `obsidian-sync.sh` | sync `_shared/` + `LEARNINGS` + `CONVENTIONS` → `agent-memory/shared/` → GitHub |
+| `*/5 * * * *` | `thrall-heartbeat.sh` | heartbeat в Firebase |
+| `@reboot` | `firebase-sse-listener.sh` | SSE mirrors для QMD |
+| `0 4 * * *` | `cleanup-tmp.sh` | очистка /tmp |
+| ~~`0 * * * *`~~ | ~~`obsidian-sync.sh`~~ | **DEPRECATED** — заменён Firebase SSE listener |
 
 #### Illidan
 
@@ -1329,21 +1360,23 @@ collections:
 | `0 21 * * *` | `memory-rotate.sh` | ротация памяти Иллидана |
 | ~~`0 */6 * * *`~~ | ~~`constitution-sync.sh`~~ | **DEPRECATED** — заменён Firebase sync (GitHub Action `sa-github-action`) |
 
-**Итого: 5 активных кронов памяти** на 3 сервера (3× `constitution-sync.sh` DEPRECATED — заменены Firebase sync).
+**Итого: 7 активных кронов** на 3 сервера (THR-C1,C2,C4, ART-C2, ILL-C1 DEPRECATED).
 
 ---
 
-### Shared Memory (shared-memory)
+### ~~Shared Memory (shared-memory)~~ — DEPRECATED
 
-**Скилл:** `shared-memory` (файл: `skills/shared-memory/SKILL.md`)
+~~**Скилл:** `shared-memory` (файл: `skills/shared-memory/SKILL.md`)~~
 
-Обязателен для всех агентов. При старте загружает только boot-файлы (SOUL + HOT + WARM = 8 KB). Shared данные (USER.md, ROSTER.md, CONVENTIONS.md, LEARNINGS и др.) подгружаются автоматически через QMD при релевантном запросе.
+**Заменён:** Firebase boot sequence (`orgbus get`) + QMD semantic search + SSE listener mirrors.
+
+При старте агент загружает boot-файлы (SOUL + HOT + WARM ~8 KB). Shared данные подгружаются через QMD (коллекция `firebase`) при релевантном запросе или через `orgbus get` для точечных запросов.
 
 | Триггер | Что происходит |
 |---------|---------------|
-| Старт сессии | Boot: SOUL + HOT + WARM (~8 KB) |
+| Старт сессии | Boot: SOUL + HOT + WARM (~8 KB) + `orgbus get messages/inbox/{agent}` |
 | Любой запрос | QMD подмешивает релевантные чанки из всех collections (личное + shared + firebase) |
-| Нужны детали по ID | `orgbus get {path}/{id}` -- точечный запрос в Firebase |
+| Нужны детали по ID | `orgbus get {path}/{id}` — точечный запрос в Firebase |
 
 ### Firebase Listener (firebase-listener)
 
@@ -1380,7 +1413,7 @@ collections:
 | Б. Compaction | Промпт flush содержит все 6 элементов, `softThresholdTokens: 4000`, `compaction.mode: safeguard` |
 | В. Shared память | `_shared/` — 8 файлов (Mac mini, master), `agent-memory/shared/` — 10 файлов (все серверы) |
 | Г. QMD | index.yml: 5 коллекций включая `shared`, `embedInterval: 30m` |
-| Д. Obsidian sync | Покрытие 5 агентов, последний успешный запуск (только Тралл) |
+| Д. Firebase SSE | SSE listener запущен, mirrors актуальны (все серверы) |
 | Е. Cron | Обязательные кроны по серверу присутствуют |
 | Ж. Маршрутизация | idea-capture.sh обновляет IDEAS.md и пушит в GitHub |
 
@@ -1404,9 +1437,8 @@ collections:
 - Писать «сделано» в HOT (только в дневник)
 - Писать идеи/наблюдения в WARM (только в WATCHLIST)
 - Игнорировать проверку размера перед записью (flush)
-- Писать в `agent-memory/shared/` напрямую (только через obsidian-sync)
-- Писать в `shared/LEARNINGS.md` напрямую (только через learnings-merge.py)
-- **Удалять защищённые кроны** (ART-C1,C3..C6, THR-C1,C3..C5, ILL-C2) без замены — см. раздел «Инварианты памяти». ART-C2, THR-C2, ILL-C1 (`constitution-sync.sh`) DEPRECATED — заменены Firebase sync.
+- Писать в `memory/firebase/` напрямую (только через SSE listener)
+- **Удалять защищённые кроны** (ART-C1,C3..C6, THR-C3,C5..C7, ILL-C2) без замены — см. раздел «Инварианты памяти». THR-C1,C2,C4, ART-C2, ILL-C1 DEPRECATED.
 - **Менять `embedInterval` на `"0"`** — QMD перестаёт строить эмбеддинги
 - **Удалять коллекцию `shared-main`** из QMD index.yml любого агента
 
