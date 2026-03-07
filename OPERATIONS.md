@@ -629,15 +629,140 @@ rd-engine    ──нашёл модель──>  model-scout (measure -> migra
 
 **Только по прямому приказу принца.** Ни один агент не может создать другого агента по собственной инициативе.
 
-1. Выбери роль(и) из таблицы ролей выше
-2. Добавь строку в ROSTER.md (shared/)
-3. Создай AGENTS.md, SOUL.md, HEARTBEAT.md
-4. Настрой openclaw.json (модель, скиллы, heartbeat)
-5. Скопируй скиллы роли в shared dir
-6. Проверь: `systemctl is-active openclaw`
-7. Smoke test: агент отвечает, скиллы грузятся, heartbeat работает
+### Фаза 1: Firebase (5 мин)
 
-Удаление: обратный порядок (7→1), убери из ROSTER.md.
+1. Создать Service Account в Firebase Console: `sa-{agent}`
+2. Скачать JSON ключ, скопировать на сервер: `~/.secrets/firebase/sa-{agent}.json` (chmod 600)
+3. Скопировать orgbus: `scp ~/.local/bin/orgbus user@server:~/.local/bin/`
+4. Проверить: `orgbus health` -- OK
+
+### Фаза 2: Регистрация агента в Firebase (2 мин)
+
+```bash
+orgbus patch agents/sa-{agent} '{"meta":{"name":"...","role":"...","model":"...","server":"...","ip":"..."},"status":"online"}'
+```
+
+### Фаза 3: QMD -- семантический поиск (5 мин)
+
+1. Установить qmd: `npm install -g @tobilu/qmd`
+2. Установить ollama + модель: `ollama pull nomic-embed-text`
+3. Создать `~/.openclaw/agents/{agent_id}/qmd/xdg-config/qmd/index.yml`:
+
+```yaml
+collections:
+  firebase:
+    path: ~/.openclaw/workspace/memory/firebase
+    pattern: "**/*.md"
+  memory-dir:
+    path: ~/.openclaw/workspace/memory
+    pattern: "**/*.md"
+  soul:
+    path: ~/.openclaw/workspace
+    pattern: SOUL.md
+  sessions:
+    path: ~/.openclaw/agents/{agent_id}/qmd/sessions
+    pattern: "**/*.md"
+```
+
+4. Добавить `memory` секцию в openclaw.json:
+
+```json
+{
+  "memory": {
+    "backend": "qmd",
+    "citations": "auto",
+    "qmd": {
+      "searchMode": "search",
+      "includeDefaultMemory": true,
+      "sessions": { "enabled": true, "retentionDays": 30 },
+      "update": { "interval": "5m", "debounceMs": 15000, "embedInterval": "30m" },
+      "limits": { "maxResults": 6, "timeoutMs": 4000 }
+    }
+  }
+}
+```
+
+### Фаза 4: SSE Listener -- realtime Firebase зеркала (5 мин)
+
+1. Скопировать `firebase-sse-listener.sh` на сервер (`~/scripts/`)
+2. Создать `~/.openclaw/workspace/memory/firebase/`
+3. Запустить: `nohup ~/scripts/firebase-sse-listener.sh &`
+4. Добавить в cron: `@reboot nohup ~/scripts/firebase-sse-listener.sh &`
+5. Проверить: `ls ~/.openclaw/workspace/memory/firebase/` -- 5 .md файлов
+
+### Фаза 5: Обязательные скиллы (5 мин)
+
+Скопировать с Mac mini (100.97.43.49):
+
+| Скилл | Зачем |
+|-------|-------|
+| task-system | Работа с задачами через Firebase |
+| learnings | Запись уроков в Firebase |
+| agent-messaging | Межагентная коммуникация через Firebase inbox |
+| firebase-ops | Операции с Firebase |
+| agent-introspection | Самоанализ через Firebase |
+| memory-audit | Аудит памяти (Firebase-aware) |
+| task-triage | Триаж входящих задач |
+
+```bash
+for skill in task-system learnings agent-messaging firebase-ops agent-introspection memory-audit task-triage; do
+  scp -r ~/.openclaw/workspace/skills/$skill/ user@server:~/.openclaw/workspace/skills/
+done
+```
+
+### Фаза 6: SOUL.md (10 мин)
+
+Создать SOUL.md с обязательными секциями:
+- Идентичность, характер, правила
+- Firebase секция (boot sequence, коммуникация, иерархия данных)
+- «Проверяй, а не вспоминай» -- orgbus get перед ответом на факты
+- Непрерывность -- каждая сессия с нуля, Firebase = постоянная база
+- Синхронизация результатов -- результат ОБЯЗАН быть в Firebase
+- DEPRECATED секция (shared-dark-lady, файловые задачи)
+
+### Фаза 7: Cron jobs (3 мин)
+
+| Расписание | Команда | Зачем |
+|-----------|---------|-------|
+| `*/5 * * * *` | `orgbus patch agents/sa-{agent} '{"lastSeen":"...","status":"online"}'` | Heartbeat |
+| `0 */6 * * *` | `constitution-sync.sh` | Синк конституции из Firebase |
+| `@reboot` | `nohup firebase-sse-listener.sh &` | SSE daemon |
+
+### Фаза 8: Конфиг openclaw.json (5 мин)
+
+Рекомендуемые настройки agents:
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "compaction": { "mode": "safeguard" },
+      "contextPruning": { "mode": "cache-ttl", "ttl": "1h" },
+      "heartbeat": { "every": "55m" },
+      "memorySearch": { "provider": "ollama" },
+      "models": {
+        "anthropic/claude-opus-4-6": {
+          "alias": "opus",
+          "params": { "cacheRetention": "long" }
+        }
+      }
+    }
+  }
+}
+```
+
+### Фаза 9: Проверка (5 мин)
+
+- [ ] `orgbus health` -- OK
+- [ ] `orgbus get agents/sa-{agent}` -- данные есть
+- [ ] `orgbus get messages/inbox/{agent}` -- inbox читается
+- [ ] `ls ~/.openclaw/workspace/memory/firebase/` -- 5 зеркал
+- [ ] `ls ~/.openclaw/agents/{id}/qmd/xdg-cache/qmd/index.sqlite` -- QMD индекс есть
+- [ ] Написать агенту в Telegram -- ответ приходит, скиллы грузятся
+
+**Общее время: ~40 минут.**
+
+Удаление: обратный порядок (9→1), убери SA из Firebase, агента из `/agents/`.
 
 ---
 
