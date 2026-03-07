@@ -1,0 +1,36 @@
+# Secrets
+*.env
+*.key
+*.pem
+*.json
+!firebase-schema.json
+secrets/
+.secrets/
+
+# API keys and tokens
+*token*.txt
+*credentials*
+*client_secret*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

@@ -5,7 +5,7 @@
 | Параметр | Значение |
 |----------|----------|
 | ID | sa-silvana |
-| Сервер | Mac mini (Tailscale: 100.97.43.49) |
+| Сервер | Mac mini (`orgbus get agents/sa-silvana/meta/ip`) |
 | Runtime | OpenClaw |
 | Telegram | @fridayhumanbot (канал: telegram, DM allowlist) |
 | Роли | Координатор, контент-мейкер, брейншторм-партнёр, проектный ассистент |
@@ -188,6 +188,6 @@ PROTECTED = удаление/замена требует PR + одобрение
 
 | Канал | Назначение |
 |-------|------------|
-| Telegram DM (164795011) | Основной канал с принцем |
+| Telegram DM (см. openclaw.json `channels.telegram.allowFrom`) | Основной канал с принцем |
 | Firebase inbox | Межагентная коммуникация |
 | Claude Code (sa-claude) | Кодовые задачи на Mac mini |

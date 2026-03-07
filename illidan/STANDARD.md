@@ -274,7 +274,7 @@ workspace/
 | Канал | Policy | AllowFrom |
 |-------|--------|-----------|
 | Telegram | DM allowlist | `<PRINCE_TG_ID>` (принц) |
-| Discord | DM allowlist | 405437779955417100 |
+| Discord | DM allowlist | `<PRINCE_DISCORD_ID>` (принц) |
 
 Streaming: Telegram partial, Discord off.
 groupPolicy: allowlist на обоих каналах.

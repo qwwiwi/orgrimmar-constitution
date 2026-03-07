@@ -399,8 +399,8 @@ Illidan VPS: sa-illidan
 
 | Платформа | Firebase path | Каналы | Контент |
 |-----------|--------------|--------|---------|
-| Telegram | `/content/telegram/` | @dashi_eshiev, DCA, AI-enthusiast | Крипто, макро, AI, DCA |
-| YouTube | `/content/youtube/` | Dashi Eshiev | Видео: крипта, AI, бренд |
+| Telegram | `/content/telegram/` | см. Firebase `content/telegram/channels/` | Крипто, макро, AI, DCA |
+| YouTube | `/content/youtube/` | см. Firebase `content/youtube/channels/` | Видео: крипта, AI, бренд |
 | Instagram | `/content/instagram/` | (placeholder) | Visual content |
 
 ### Pipeline (8 фаз)
@@ -692,7 +692,7 @@ collections:
 
 ### Фаза 5: Обязательные скиллы (5 мин)
 
-Скопировать с Mac mini (100.97.43.49):
+Скопировать с Mac mini (`orgbus get agents/sa-silvana/meta/ip`):
 
 | Скилл | Зачем |
 |-------|-------|
