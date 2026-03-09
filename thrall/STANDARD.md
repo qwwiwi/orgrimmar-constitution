@@ -12,8 +12,8 @@ _Обновлено: 2026-03-07. Firebase V2._
 | **ID** | sa-thrall |
 | **Имя** | Тралл |
 | **Роли** | coder, architect |
-| **Сервер** | Thrall VPS (46.101.119.56) |
-| **Tailscale IP** | 100.104.191.127 |
+| **Сервер** | Thrall VPS (***.***.119.56) |
+| **Tailscale IP** | ***.***.191.127 |
 | **RAM** | 8 GB |
 | **Disk** | 67 GB |
 | **Workspace** | `/home/openclaw/.openclaw/workspace/` |
@@ -298,10 +298,10 @@ workspace/
 
 | Сервер | Tailscale | SSH | Кто |
 |--------|-----------|-----|-----|
-| Mac mini | 100.97.43.49 | jasonqwwen@100.97.43.49 | Сильвана |
-| Arthas VPS | 100.107.104.91 | root@100.107.104.91 | Артас |
-| Thrall VPS (ты) | 100.104.191.127 | localhost | Тралл |
-| Illidan VPS | 100.115.122.16 | root@100.115.122.16 | Иллидан |
+| Mac mini | ***.***.43.49 | jasonqwwen@***.***.43.49 | Сильвана |
+| Arthas VPS | ***.***.104.91 | root@***.***.104.91 | Артас |
+| Thrall VPS (ты) | ***.***.191.127 | localhost | Тралл |
+| Illidan VPS | ***.***.122.16 | root@***.***.122.16 | Иллидан |
 
 ---
 
@@ -365,4 +365,4 @@ workspace/
 | `obsidian-sync.sh` | Firebase + SSE listener |
 | `backup-daily.sh` (restic) | Отключён (2026-03-07) |
 | `main.sqlite` | QMD (backend: qmd) |
-| Sylvanas VPS (100.107.104.91) как Сильвана | Это Arthas. Сильвана = Mac mini (100.97.43.49) |
+| Sylvanas VPS (***.***.104.91) как Сильвана | Это Arthas. Сильвана = Mac mini (***.***.43.49) |
