@@ -197,9 +197,9 @@ reserveTokensFloor: 30000         <- минимальный резерв для 
 **Скилл:** `chat-alerts`
 
 **Триггеры:**
-- @mention принца (`dashieshiev`, `dashi_eshiev`, `dashi_crypto`)
+- @mention принца (алиасы принца)
 - Reply на сообщение принца
-- Имя: "Даши", "Dashi"
+- Имя: «принц», «вождь»
 
 **Формат:**
 ```

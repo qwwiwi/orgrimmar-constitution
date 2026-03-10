@@ -98,7 +98,7 @@ ssh -o ConnectTimeout=5 root@<ARTHAS_TS_IP> "bash /home/openclaw/.openclaw/scrip
 |----------|----------|
 | **Расписание** | `0 */6 * * *` (каждые 6 часов) |
 | **Скрипт** | `/home/openclaw/.openclaw/scripts/constitution-sync.sh` |
-| **Что делает** | `git pull` репозитория `jasonqween/orgrimmar-constitution` |
+| **Что делает** | `git pull` репозитория `orgrimmar-constitution` |
 | **Зачем** | Обновляет локальную копию конституции. Без него Иллидан работает по устаревшим правилам |
 | **При удалении** | Иллидан работает по старой конституции -- НАРУШЕНИЕ инварианта |
 
