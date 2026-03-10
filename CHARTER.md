@@ -106,6 +106,8 @@ _Роли, границы, безопасность. Обновляется по
 **Субагенты:** наследуют все ограничения. Таймаут 30 мин. Не могут менять конфиги/auth/SSH.
 
 > Incident playbooks и backup policy -- в runbooks (Firebase).
+> Протокол отказов (Firebase down, task collision) -- runbook «failure-protocol» (Firebase).
+> Жизненный цикл секретов -- runbook «secrets-lifecycle» (Firebase).
 
 ---
 
