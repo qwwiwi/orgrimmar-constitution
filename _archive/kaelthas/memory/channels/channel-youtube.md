@@ -1,6 +1,6 @@
-# YouTube: Dashi Eshiev
+# YouTube: принц
 
-- **URL:** https://www.youtube.com/@dashi_eshiev
+- **URL:** https://www.youtube.com/канал принца
 - **Язык:** Русский
 - **Тематика:** Крипта, AI, инвестиции, личный бренд
 

@@ -93,12 +93,22 @@ Firebase RTDB (`/tasks/`). Инструмент: orgbus.
 
 ## Heartbeats
 
+Два типа:
+- **LLM-heartbeat** -- полноценная проверка через OpenClaw (inbox, tasks, triage)
+- **Ping-heartbeat** -- cron `orgbus patch agents/{id}` каждые 5 мин (liveness signal)
+
+### LLM-heartbeat
+
 | Агент | Частота | Модель |
 |-------|---------|--------|
 | Тралл | 3ч | Grok |
 | Сильвана | 2ч | Grok |
 | Артас | OFF | -- |
 | Иллидан | 2ч | Kimi |
+
+### Ping-heartbeat
+
+Все агенты: cron каждые 5 мин, `orgbus patch agents/{id} {"heartbeat": <timestamp>, "status": "online"}`.
 
 Принцип: heartbeat = молчание если всё ок. Алерт только при проблеме.
 

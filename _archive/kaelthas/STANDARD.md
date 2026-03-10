@@ -162,7 +162,7 @@ _Полное описание архитектуры, конфигурации 
 ## Pipeline постов (content-engine, 7 шагов)
 
 ### Шаг 1. Канал
-Крипто/макро → @dashi_eshiev. Другие → спроси.
+Крипто/макро → канал принца. Другие → спроси.
 
 ### Шаг 2. Идея
 Принц дал тему → использовать. Нет → предложить 2-3 из `ideas/CONTENT-IDEAS.md`.
@@ -250,12 +250,12 @@ workspaces/kaelthas/
 │   ├── stance/
 │   │   └── STANCE_CORE.md        Позиции принца по рынку
 │   ├── channels/
-│   │   ├── channel-dashi-eshiev.md     @dashi_eshiev профиль
+│   │   ├── channel-канал-принца.md     канал принца профиль
 │   │   ├── channel-dca.md              DCA $10 профиль
 │   │   ├── channel-ai.md              AI энтузиаст профиль
 │   │   ├── channel-youtube.md          YouTube профиль
 │   │   └── archive/
-│   │       └── channel-dashi-eshiev-examples.md  Разбор стиля
+│   │       └── channel-канал-принца-examples.md  Разбор стиля
 │   ├── knowledge/
 │   │   ├── STRATEGY_3-13M.md     Стратегия 3-13 мес
 │   │   └── market-thesis.md      Рыночные тезисы
