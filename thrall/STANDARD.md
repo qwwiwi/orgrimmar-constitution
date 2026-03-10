@@ -363,6 +363,6 @@ workspace/
 | `orgrimmar-introspection` | `agent-introspection` |
 | `shared-memory` | `firebase-ops` + SSE зеркала |
 | `obsidian-sync.sh` | Firebase + SSE listener |
-| `backup-daily.sh` (restic) | Отключён (2026-03-07) |
+| `backup-daily.sh` (restic) | Активен (восстановлен 2026-03-10, cron 03:30 UTC) |
 | `main.sqlite` | QMD (backend: qmd) |
 | Sylvanas VPS (***.***.104.91) как Сильвана | Это Arthas. Сильвана = Mac mini (***.***.43.49) |

@@ -3,14 +3,14 @@
 _Операционная база: каналы, стиль, процессы. Идеи -- в IDEAS.md._
 
 ## Принц
-- Имя: Даши Ешиев
-- Telegram: @dashi_eshiev
+- Имя: принц
+- Telegram: канал принца
 - Спикер: Blockchain Forum 2026 (Москва, апрель 2026)
 
 ## Каналы
 | Канал | Файл (core) | Стиль+примеры |
 |-------|-------------|---------------|
-| @dashi_eshiev | channels/channel-dashi-eshiev.md | channels/archive/channel-dashi-eshiev-examples.md |
+| канал принца | channels/channel-канал-принца.md | channels/archive/channel-канал-принца-examples.md |
 | DCA $10 | channels/channel-dca.md | -- |
 | AI энтузиаст | channels/channel-ai.md | -- |
 | YouTube | channels/channel-youtube.md | channels/youtube-producer.md |

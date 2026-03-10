@@ -1,12 +1,12 @@
-# Каналы Даши Ешиева
+# Каналы принца
 
 ## Telegram-каналы
 
-### 1. Dashi Eshiev (основной)
-- **Username:** @dashi_eshiev
-- **Ссылка:** https://t.me/dashi_eshiev
+### 1. принц (основной)
+- **Username:** канал принца
+- **Ссылка:** https://t.me/канал-принца
 - **Контент:** Криптоанализ, макро, личные проекты, инвестиционная философия
-- **Память:** `memory/channels/channel-dashi-eshiev.md`
+- **Память:** `memory/channels/channel-канал-принца.md`
 
 ### 2. DCA $10 каждый день
 - **Ссылка:** https://t.me/+V-7YMMfVIt1jZWY6
@@ -22,13 +22,13 @@
 
 ## YouTube
 
-### 4. Dashi Eshiev (YouTube)
-- **URL:** https://www.youtube.com/@dashi_eshiev
+### 4. принц (YouTube)
+- **URL:** https://www.youtube.com/канал принца
 - **Контент:** Видео о крипте, AI, инвестициях, личный бренд
 - **Память:** `memory/channels/channel-youtube.md`
 
 ## Контакты для связи
-- **Telegram (личный):** @dashi_crypto, @dashi_eshiev
+- **Telegram (личный):** канал принца, канал принца
 - **Discord:** qwwiwi
 
 ## Проекты
