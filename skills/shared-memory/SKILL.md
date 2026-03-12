@@ -1,18 +1,17 @@
 ---
 name: shared-memory
 description: >
-  Чтение shared-слоя памяти Orgrimmar. Обязателен при старте каждой сессии.
-  Содержит: профиль принца, реестр агентов, конвенции, бюджеты, чаты, идеи, уроки.
+  Чтение общего контекста Orgrimmar. Источник истины -- Firebase RTDB.
   Используй когда: (1) старт сессии, (2) задача касается другого агента или сервера,
   (3) вопрос о принце, команде, стоимости, чатах или конвенциях.
 ---
 
 # Shared Memory — Чтение общего контекста
 
-Shared-слой — единственный источник правды о принце, команде и операционных стандартах.
-Обновляется автоматически: Тралл синхронизирует каждый час через obsidian-sync.sh.
+Firebase RTDB -- единственный источник правды о принце, команде и операционных стандартах.
+Локальные зеркала и markdown-файлы -- только для retrieval/кэша, не для записи фактов.
 
-**Путь:** `/home/openclaw/.openclaw/agent-memory/shared/`
+**Читать через:** `orgbus get ...`
 
 ---
 
@@ -22,8 +21,8 @@ Shared-слой — единственный источник правды о п
 
 ### 1. Кто принц (обязательно)
 ```bash
-cat /home/openclaw/.openclaw/agent-memory/shared/USER.md
-cat /home/openclaw/.openclaw/agent-memory/shared/USER_COGNITIVE_PROFILE.md
+orgbus get profile/user
+orgbus get profile/user_cognitive
 ```
 **Что применять:**
 - Обращение: «принц» или «мой принц» (никогда «шеф», «пользователь», «вы»)
@@ -32,8 +31,8 @@ cat /home/openclaw/.openclaw/agent-memory/shared/USER_COGNITIVE_PROFILE.md
 
 ### 2. Команда и возможности
 ```bash
-cat /home/openclaw/.openclaw/agent-memory/shared/ROSTER.md
-cat /home/openclaw/.openclaw/agent-memory/shared/AGENTS-ROSTER.md
+orgbus get agents
+orgbus get roster
 ```
 **Что применять:**
 - Кто какой агент, на каком сервере, с каким Telegram-ботом
@@ -41,7 +40,7 @@ cat /home/openclaw/.openclaw/agent-memory/shared/AGENTS-ROSTER.md
 
 ### 3. Стандарты и правила
 ```bash
-cat /home/openclaw/.openclaw/agent-memory/shared/CONVENTIONS.md
+orgbus get constitution/conventions
 ```
 **Что применять:**
 - Конвенции кода, git, shell-безопасность
@@ -49,7 +48,7 @@ cat /home/openclaw/.openclaw/agent-memory/shared/CONVENTIONS.md
 
 ### 4. Бюджет и стоимость
 ```bash
-cat /home/openclaw/.openclaw/agent-memory/shared/COSTS.md
+orgbus get finance/costs
 ```
 **Что применять:**
 - Не превышать лимиты без согласования с принцем
@@ -57,8 +56,8 @@ cat /home/openclaw/.openclaw/agent-memory/shared/COSTS.md
 
 ### 5. Каналы связи
 ```bash
-cat /home/openclaw/.openclaw/agent-memory/shared/CHATS.md
-cat /home/openclaw/.openclaw/agent-memory/shared/TELEGRAM-CHATS.md
+orgbus get chats
+orgbus get chats/telegram
 ```
 **Что применять:**
 - ID чатов для отправки сообщений
@@ -66,8 +65,8 @@ cat /home/openclaw/.openclaw/agent-memory/shared/TELEGRAM-CHATS.md
 
 ### 6. Контекст (по необходимости)
 ```bash
-cat /home/openclaw/.openclaw/agent-memory/shared/IDEAS.md      # идеи проекта
-cat /home/openclaw/.openclaw/agent-memory/shared/LEARNINGS.md  # уроки всех агентов
+orgbus get content/telegram/ideas      # идеи
+orgbus get learnings                    # уроки
 ```
 
 ---
@@ -77,23 +76,19 @@ cat /home/openclaw/.openclaw/agent-memory/shared/LEARNINGS.md  # уроки вс
 - Задача затрагивает другого агента → перечитай `ROSTER.md`
 - Вопрос о стоимости/модели → перечитай `COSTS.md`
 - Принц упоминает чат или бота → перечитай `CHATS.md`
-- Принц устанавливает новое правило → немедленно обнови `memory/warm/LEARNINGS.md` (скилл `learnings`)
+- Принц устанавливает новое правило → немедленно запиши урок в Firebase `/learnings/` (скилл `learnings`)
 
 ---
 
 ## Проверка свежести
 
-Данные обновляются Траллом каждый час. Если работаешь офлайн или после инцидента:
-```bash
-stat /home/openclaw/.openclaw/agent-memory/shared/USER.md
-# Если mtime > 2 часов назад — данные могут быть устаревшими
-```
+Если Firebase недоступен -- можно использовать локальные зеркала только как fallback с пометкой [unverified].
 
 ---
 
 ## Что НИКОГДА не делать
 
-- ❌ Не редактировать файлы в `agent-memory/shared/` напрямую
-- ❌ Не писать в `shared/LEARNINGS.md` вручную (только через learnings-merge.py)
+- ❌ Не использовать локальные зеркала как источник истины
+- ❌ Не писать факты в локальные markdown-файлы вместо Firebase
 - ❌ Не обращаться к принцу как «шеф», «вы», «пользователь»
 - ❌ Не игнорировать `CONVENTIONS.md` в пользу личных предпочтений
