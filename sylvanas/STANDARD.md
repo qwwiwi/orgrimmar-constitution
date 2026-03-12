@@ -70,10 +70,9 @@ Firebase RTDB -- единственный источник правды.
 
 ### Зеркала (read-only кэш)
 
-SSE listener поддерживает зеркала в `memory/firebase/`:
-agents-status.md, tasks-mine.md, learnings.md, content-ideas.md, bulletin.md.
+Локальное read-only зеркало Firebase для retrieval и QMD находится в `firebase-mirror/`.
 
-Обновляются в реальном времени. Используются для быстрого чтения, НЕ как источник фактов.
+Это не источник истины. Источник истины -- Firebase RTDB через `orgbus`. `memory/firebase/` -- legacy path, не использовать.
 
 ## Память (3 уровня)
 
@@ -93,7 +92,7 @@ agents-status.md, tasks-mine.md, learnings.md, content-ideas.md, bulletin.md.
 | memory/tone/TONE_OF_VOICE.md | Tone of Voice для постов |
 | memory/channels/channel-*.md | Профили Telegram-каналов (4 шт) |
 | memory/knowledge/STRATEGY_3-13M.md | Стратегия на 3-13 мес |
-| memory/firebase/*.md | Зеркала Firebase (5 файлов) |
+| firebase-mirror/**/*.md | Локальное зеркало Firebase для retrieval/QMD |
 
 ### Принцип работы с памятью
 
@@ -102,7 +101,7 @@ agents-status.md, tasks-mine.md, learnings.md, content-ideas.md, bulletin.md.
 3. При записи: сначала Firebase, потом локальный файл
 4. Daily memory: Firebase `/agents/sa-silvana/memory/daily/`
 
-## Скиллы (24)
+## Скиллы (смотри реестр в workspace, не фиксируй число в статике)
 
 | ID | Скилл | Назначение | Защита |
 |----|-------|------------|--------|
@@ -180,7 +179,7 @@ PROTECTED = удаление/замена требует PR + одобрение
 
 | Процесс | Скрипт | Описание |
 |---------|--------|----------|
-| SSE listener | firebase-sse-listener.sh | ~11 потоков, зеркала в memory/firebase/ |
+| Firebase→mirror sync | firebase-to-qmd-sync.sh / firebase-sse-listener-v3.sh | локальное зеркало в firebase-mirror/ для retrieval |
 | Heartbeat | silvana-heartbeat.sh | cron */5 мин |
 | Obsidian sync | firebase-to-obsidian.sh | cron */2 мин |
 
