@@ -7,6 +7,15 @@ on:
       - 'PRINCIPLES.md'
       - 'CHARTER.md'
       - 'OPERATIONS.md'
+      - 'CONVENTIONS.md'
+      - 'MISSION.md'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'sylvanas/**'
+      - 'thrall/**'
+      - 'illidan/**'
+      - 'arthas/**'
+      - 'skills/**'
 
 jobs:
   sync:
@@ -57,7 +66,7 @@ jobs:
           TOKEN="${{ steps.auth.outputs.token }}"
           FAILED=0
 
-          for doc in PRINCIPLES CHARTER OPERATIONS; do
+          for doc in PRINCIPLES CHARTER OPERATIONS CONVENTIONS MISSION README CHANGELOG; do
             FILE="${doc}.md"
             FIREBASE_PATH="constitution/$(echo "$doc" | tr '[:upper:]' '[:lower:]')"
 
