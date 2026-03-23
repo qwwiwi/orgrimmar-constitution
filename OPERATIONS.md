@@ -167,6 +167,45 @@ Atomic claim: `orgbus patch tasks/{id} {"assignee": "{agent}", "claimed_at": <ti
 
 ---
 
+## ACP (Agent Client Protocol)
+
+ACP позволяет координаторам делегировать задачи CLI-harness'ам (Claude Code, Codex) через стандартный протокол.
+
+| Параметр | Значение |
+|----------|----------|
+| Backend | ACPX (OpenClaw bundled plugin) |
+| Протокол | JSON-RPC через stdio |
+| Сервер | Mac mini (все harness'ы локально) |
+
+### Доступные harness'ы
+
+| AgentId | CLI | Модель | Назначение |
+|---------|-----|--------|------------|
+| `claude-code` | Claude Code | Claude Opus 4.6 | Код, фиксы, тесты |
+| `codex` | Codex | GPT-5.4 | Архитектура, планирование, code review |
+
+### Лимиты
+
+- Max 4 параллельных сессии
+- Idle timeout: 12 часов
+- Max age: 72 часа
+
+### Доступ
+
+- Программный: `sessions_spawn runtime=acp agentId=<id>`
+- Telegram: прямое сообщение в ACP-топик группы
+- Координатор (Сильвана) спавнит и контролирует сессии
+
+### Кодовый пайплайн через ACP
+
+1. Codex → план/архитектура
+2. Claude Code → реализация
+3. Codex → code review (параллельно с Opus)
+4. Claude Code → фиксы
+5. Координатор → финал + отчёт
+
+---
+
 ## Данные и инфраструктура
 
 Persistent state: Firebase RTDB. Инструмент доступа: orgbus CLI. Бэкапы: ежедневно, перекрёстно.
