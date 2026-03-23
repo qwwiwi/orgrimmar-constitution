@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.4.0 (2026-03-22) -- ACP Infrastructure
+
+- Добавлена секция ACP (Agent Client Protocol) в OPERATIONS.md
+- Обновлён sylvanas/STANDARD.md:
+  - Модели: primary Opus only (fallback убран), heartbeat kimi-k2.5
+  - Новая секция ACP: harness'ы Claude Code и Codex, пайплайн, конфигурация
+  - Скиллы: +code-pipeline, +code-review (SIL-SKL-25, SIL-SKL-26)
+  - CLI: +codex, +acpx
+  - Каналы: +Telegram ACP group, +ACP sessions
+  - Зелёная зона: +спавн ACP сессий
+
+
 
 
 ## v3.3.1 (2026-03-04) -- Cost Tracker Артаса

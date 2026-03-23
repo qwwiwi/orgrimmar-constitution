@@ -14,25 +14,59 @@
 
 | Роль | Алиас | Провайдер |
 |------|-------|-----------|
-| Primary | `opus` | Anthropic (OAuth) |
-| Fallback 1 | `codex` | OpenAI (OAuth) |
-| Fallback 2 | `grok` | OpenRouter |
-| Heartbeat | `grok` | OpenRouter |
-| Субагенты (default) | `grok` | OpenRouter |
+| Primary | `opus` (Claude Opus 4.6) | Anthropic (OAuth) |
+| Fallback | нет (намеренно) | -- |
+| Heartbeat | `kimi-k2.5` | OpenRouter |
+| Субагенты (код) | `opus`, `codex` (GPT-5.4) | Anthropic (OAuth), OpenAI (OAuth) |
+| Субагенты (ресерч/текст) | `opus`, `codex`, `grok` | Anthropic/OpenAI (OAuth), OpenRouter |
 
-Запреты: opus и sonnet для субагентов. Max 5 concurrent субагентов.
+Запреты: Opus через OpenRouter (дорого). Grok к коду не допускается. Sonnet не используется. Max 5 concurrent субагентов.
 
-Дополнительные модели (доступны для задач):
-- `kimi` -- OpenRouter
-- `gemini-flash` -- OpenRouter
-- `gemini` -- OpenRouter, 1M контекст
+## ACP (Agent Client Protocol)
+
+Сильвана использует ACP для делегирования кодовых задач локальным CLI-harness'ам.
+
+| Параметр | Значение |
+|----------|----------|
+| Backend | ACPX (OpenClaw plugin) |
+| Max сессий | 4 параллельных |
+| Idle timeout | 12 часов |
+| Max age | 72 часа |
+| Telegram группа | ACP agent (chat_id: `-1003548032826`) |
+
+### Доступные harness'ы
+
+| AgentId | CLI | Модель | Topic ID | Роль |
+|---------|-----|--------|----------|------|
+| `claude-code` | Claude Code CLI | Claude Opus 4.6 | topic:2 | Написание кода, фиксы, тесты |
+| `codex` | Codex CLI | GPT-5.4 | topic:3 | Архитектура, планирование, code review |
+
+### Пайплайн кодовых задач
+
+1. **Codex** -- архитектура и план (sessions_spawn runtime=acp agentId=codex)
+2. **Claude Code** -- написание кода (sessions_spawn runtime=acp agentId=claude-code)
+3. **Codex** -- code review (параллельно с Opus)
+4. **Claude Code** -- фиксы по результатам ревью
+5. **Сильвана** -- финальная проверка и отчёт принцу
+
+### Конфигурация
+
+- ACPX config: `~/.acpx/config.json`
+- Agent overrides: `claude-code` → `@zed-industries/claude-agent-acp@^0.22.0`
+- Codex bridge: `~/.openclaw/scripts/codex-acp-bridge.mjs`
+- Telegram bindings: type=acp в openclaw.json
+
+### Два режима работы
+
+1. **Программный**: Сильвана спавнит сессии через `sessions_spawn runtime=acp`
+2. **Прямой**: принц пишет в Telegram-топики группы ACP agent
 
 ## Heartbeat
 
 | Параметр | Значение |
 |----------|----------|
 | Интервал | 55 мин (OpenClaw) + cron */5 мин (Firebase) |
-| Модель | `grok` |
+| Модель | `kimi-k2.5` (OpenRouter) |
 | Что проверяет (OpenClaw) | Inbox triage, задачи в Firebase, счётчики |
 | Что делает (cron) | `orgbus patch agents/sa-silvana` -- обновляет lastHeartbeat |
 
@@ -129,6 +163,8 @@ Firebase RTDB -- единственный источник правды.
 | SIL-SKL-22 | agent-messaging | Межагентная коммуникация | -- |
 | SIL-SKL-23 | openclaw-architecture | Аудит конфигурации | -- |
 | SIL-SKL-24 | verification-before-completion | Проверка перед завершением | PROTECTED |
+| SIL-SKL-25 | code-pipeline | 6-этапный пайплайн кодовых задач | -- |
+| SIL-SKL-26 | code-review | Кросс-ревью кода субагентов | -- |
 
 PROTECTED = удаление/замена требует PR + одобрение принца.
 
@@ -139,7 +175,9 @@ PROTECTED = удаление/замена требует PR + одобрение
 | orgbus | Firebase RTDB |
 | gog | Google Workspace (feature-rich) |
 | gws | Google Workspace (official API) |
-| claude | Claude Code CLI |
+| claude | Claude Code CLI (v2.1.81) |
+| codex | OpenAI Codex CLI |
+| acpx | ACP multiplexer (bundled с OpenClaw) |
 | duckduckgo-search | Web search (pip3) |
 | yt-dlp | YouTube download (pip3) |
 | gcloud | Google Cloud SDK |
@@ -152,9 +190,10 @@ PROTECTED = удаление/замена требует PR + одобрение
 - Чтение Firebase, проверки системы
 - Обновление своей памяти (HOT/WARM/COLD)
 - Запись learnings
-- Делегирование задач субагентам
+- Делегирование задач субагентам и ACP harness'ам
 - Контент: черновики, идеи, разбор источников
 - Ответы принцу в DM
+- Спавн ACP сессий для кодовых задач
 
 ### Красная зона (требует одобрение принца)
 
@@ -188,5 +227,7 @@ PROTECTED = удаление/замена требует PR + одобрение
 | Канал | Назначение |
 |-------|------------|
 | Telegram DM (см. openclaw.json `channels.telegram.allowFrom`) | Основной канал с принцем |
+| Telegram ACP group (-1003548032826) | ACP harness топики (Claude Code, Codex) |
 | Firebase inbox | Межагентная коммуникация |
 | Claude Code (sa-claude) | Кодовые задачи на Mac mini |
+| ACP sessions (sessions_spawn) | Программный спавн harness сессий |
