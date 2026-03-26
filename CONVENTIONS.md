@@ -146,3 +146,44 @@ Squash merge для чистой истории. Один PR = один комм
 1. `obsidian-sync.sh` -- автоматическая синхронизация заметок принца.
 2. Emergency hotfix -- по прямому указанию принца (записать причину в events/).
 3. Emergency recovery -- по прямому указанию принца.
+
+---
+
+## Аналитические события
+
+Формат записи аналитического события через orgbus:
+
+```bash
+DATE=$(date -u +%Y-%m-%d)
+TS=$(date +%s)000
+
+~/.local/bin/orgbus push "analytics/events/${DATE}" \
+  "{\"agent\":\"sa-<agent>\",\"type\":\"<type>\",\"timestamp\":${TS},\"data\":{...}}"
+```
+
+### Обязательные поля
+
+| Поле | Тип | Пример |
+|------|-----|--------|
+| `agent` | string | `sa-silvana` |
+| `type` | string | `task.created` |
+| `timestamp` | number (Unix ms) | `1711475400000` |
+| `data` | object | `{"task_id": "-Oabc"}` |
+
+### Дополнительные поля
+
+- **Субагенты** (`subagent.*`): `parent_agent`, `worker_model`, `duration_ms`, `outcome`
+- **Стоимость** (`cost.incurred`): `provider`, `model`, `cost_usd`, `tokens_in`, `tokens_out`
+- **Ошибки** (`error`): `severity` (P0/P1/P2), `source`, `message`
+
+### Допустимые типы
+
+`task.created`, `task.completed`, `subagent.spawn`, `subagent.completed`, `cost.incurred`, `error`, `heartbeat.check`
+
+### Правила
+
+- Timestamps: Unix milliseconds (13 цифр), UTC
+- Дата в пути: UTC (`date -u +%Y-%m-%d`)
+- Один push на событие; не батчить
+- Не записывать PII (персональные данные) в `data`
+- Полная схема: `docs/analytics/event-schema.md`

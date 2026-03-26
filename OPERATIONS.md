@@ -214,3 +214,43 @@ Persistent state: Firebase RTDB. Инструмент доступа: orgbus CLI
 > Backup policy -- runbook «backup» (Firebase).
 > Инварианты памяти (protected configs/crons/skills) -- runbook «invariants» (Firebase).
 > Стандарт openclaw.json -- runbook «config-standard» (Firebase).
+
+---
+
+## Аналитика и наблюдаемость
+
+Все агенты записывают значимые события в `analytics/events/YYYY-MM-DD/` через orgbus.
+
+### Типы событий
+
+| Тип | Когда записывать |
+|-----|-----------------|
+| `task.created` | Создание задачи |
+| `task.completed` | Завершение задачи |
+| `subagent.spawn` | Запуск субагента |
+| `subagent.completed` | Завершение субагента |
+| `cost.incurred` | Расход на API (OpenRouter) |
+| `error` | Ошибка агента или системы (P0-P2) |
+| `heartbeat.check` | Результат LLM-heartbeat |
+
+### Формат
+
+Обязательные поля: `agent`, `type`, `timestamp` (Unix ms), `data` (object).
+Полная схема: `docs/analytics/event-schema.md`.
+
+### Агрегация
+
+- Cron-скрипт `analytics-hourly-rollup.sh` на Mac mini (каждый час, 5-я минута)
+- Считает `analytics/counters/YYYY-MM-DD/`: `events_total`, `by_agent`, `by_type`, `errors_total`
+- Инкрементальный: использует `analytics/meta/last_aggregated_key`
+- Retention: события старше 30 дней удаляются автоматически; счётчики хранятся бессрочно
+
+### Дашборд
+
+Вкладка Analytics на `task.orgrimmar.xyz` -- визуализация счётчиков за текущий день.
+
+### Ответственность
+
+- Запись событий: каждый агент самостоятельно
+- Агрегация: Mac mini (cron)
+- Мониторинг: координатор (Сильвана) проверяет counters в heartbeat
